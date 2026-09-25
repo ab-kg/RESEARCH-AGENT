@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowUpRight, BookOpen, Check, ChevronDown, CircleHelp, Clock3, FileText, LoaderCircle, Moon, Plus, Search, Sparkles, Sun } from 'lucide-react'
+import { ArrowUpRight, BookOpen, Check, ChevronDown, CircleHelp, Clock3, FileText, LoaderCircle, LogOut, Moon, Plus, Search, Sparkles, Sun } from 'lucide-react'
 
 type Run = { id: string; question: string; status: string; created_at: string; report?: { title: string; summary: string; sections: { heading: string; body: string }[]; sources: string[]; demo: boolean } }
 
@@ -72,6 +72,7 @@ export default function App() {
 
   function logout() {
     localStorage.removeItem('fieldnotes-token'); setToken(''); setRuns([]); setSelected(null); setAccountEmail('')
+    setAuthMode('login'); setAuthEmail(''); setAuthPassword(''); setAuthError('')
   }
 
   async function submit(value = question) {
@@ -97,7 +98,7 @@ export default function App() {
       <button className="nav-item" onClick={() => { void refresh(); setSelected(null) }}><FileText size={16}/> All briefings</button>
       <div className="side-label recent-label">RECENT</div>
       <div className="recent-list">{runs.length ? runs.slice(0, 7).map(run => <button className={`recent-item ${selected?.id === run.id ? 'selected' : ''}`} key={run.id} onClick={() => setSelected(run)}><span className="recent-dot"/>{run.question}</button>) : <p className="empty-recent">Your briefings will appear here.</p>}</div>
-      <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={16}/> Help & feedback</button><button className="profile profile-button" onClick={logout} title="Sign out"><span className="profile-avatar">{(accountEmail[0] ?? 'U').toUpperCase()}</span><span><b>{accountEmail || 'Your account'}</b><small>Sign out</small></span><ChevronDown size={15}/></button></div>
+      <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={16}/> Help & feedback</button><div className="profile"><span className="profile-avatar">{(accountEmail[0] ?? 'U').toUpperCase()}</span><span><b>{accountEmail || 'Your account'}</b><small>Signed in</small></span></div><button className="nav-item signout-button" onClick={logout}><LogOut size={16}/> Sign out</button></div>
     </aside>
 
     <main className="main">
