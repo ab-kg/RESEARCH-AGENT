@@ -1,0 +1,55 @@
+:root { color-scheme: light; transition: background-color .2s, color .2s; }
+.theme-toggle { width: 30px; height: 30px; display: grid; place-items: center; background: transparent; color: #81857b; border: 1px solid transparent; border-radius: 7px; cursor: pointer; }
+.theme-toggle:hover { background: #eceee7; border-color: #e1e4da; }
+
+:root[data-theme="dark"] { color-scheme: dark; background: #171a17; color: #e7e9e2; }
+:root[data-theme="dark"] body { background: #171a17; color: #e7e9e2; }
+:root[data-theme="dark"] .sidebar { background: #1d211d; border-color: #2b302a; }
+:root[data-theme="dark"] .brand,
+:root[data-theme="dark"] .welcome h1,
+:root[data-theme="dark"] .report-title { color: #e6e8df; }
+:root[data-theme="dark"] .workspace { background: #242924; border-color: #343a32; }
+:root[data-theme="dark"] .nav-item.active,
+:root[data-theme="dark"] .recent-item.selected,
+:root[data-theme="dark"] .recent-item:hover { background: #30382e; color: #dce4d5; }
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .footer,
+:root[data-theme="dark"] .profile { border-color: #2b302a; }
+:root[data-theme="dark"] .breadcrumb b { color: #c5c9bf; }
+:root[data-theme="dark"] .composer,
+:root[data-theme="dark"] .report-card { background: #202420; border-color: #343a32; color: #c0c4b9; }
+:root[data-theme="dark"] .composer textarea { background: transparent; color: #e1e4da; }
+:root[data-theme="dark"] .composer textarea::placeholder { color: #777d72; }
+:root[data-theme="dark"] .suggestions button { border-color: #343a32; color: #b7bcb1; }
+:root[data-theme="dark"] .suggestions button:hover,
+:root[data-theme="dark"] .theme-toggle:hover { background: #292f29; border-color: #414a3f; }
+:root[data-theme="dark"] .report-card h2 { color: #e0e3d9; }
+:root[data-theme="dark"] .report-section,
+:root[data-theme="dark"] .sources-block { border-color: #343a32; }
+:root[data-theme="dark"] .eyebrow-icon { background: #2c352a; color: #aab99e; }
+:root[data-theme="dark"] .demo-callout { background: #302d24; color: #d1c8b2; }
+:root[data-theme="dark"] .demo-tag { background: #3a3428; color: #d4b987; }
+:root[data-theme="dark"] .error-box { background: #332421; border-color: #63443c; color: #e3a28e; }
+:root[data-theme="dark"] .theme-toggle { color: #c2c8bb; }
+:root[data-theme="dark"] .welcome h1 em { color: #a5b39b; }
+
+.profile-button { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font-family: inherit; }
+.auth-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; background: #f8f8f4; color: #252820; }
+.auth-brand { margin-bottom: 28px; }
+.auth-card { width: min(420px, 100%); padding: 32px; border: 1px solid #e6e7df; border-radius: 12px; background: #fff; box-shadow: 0 8px 30px #39442a0a; }
+.auth-card h1 { margin: 22px 0 7px; color: #2d332a; font: 400 37px/1.1 'Newsreader', serif; letter-spacing: -.6px; }
+.auth-intro { margin: 0 0 23px; color: #7a7d73; font-size: 12px; line-height: 1.65; }
+.auth-form { display: grid; gap: 15px; }
+.auth-form label { display: grid; gap: 7px; color: #63675d; font-size: 11px; font-weight: 500; }
+.auth-form input { height: 40px; padding: 0 11px; border: 1px solid #dcdfd5; border-radius: 6px; background: #fff; color: #383d34; font: 12px 'DM Sans', sans-serif; outline: 0; }
+.auth-form input:focus { border-color: #9dab92; box-shadow: 0 0 0 3px #71836912; }
+.auth-submit { justify-content: center; width: 100%; height: 39px; margin-top: 3px; font-size: 11px; }
+.auth-switch { margin: 19px 0 0; color: #8b8e84; text-align: center; font-size: 11px; }
+.auth-switch button { border: 0; background: none; color: #536b4d; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; }
+.auth-footnote { color: #a0a297; font-size: 10px; margin: 20px 0 0; }
+:root[data-theme="dark"] .auth-page { background: #171a17; color: #e7e9e2; }
+:root[data-theme="dark"] .auth-card { background: #202420; border-color: #343a32; }
+:root[data-theme="dark"] .auth-card h1 { color: #e6e8df; }
+:root[data-theme="dark"] .auth-form label { color: #bfc4b9; }
+:root[data-theme="dark"] .auth-form input { background: #1a1e1a; border-color: #3a4038; color: #e2e5dc; }
+:root[data-theme="dark"] .auth-switch button { color: #afc1a5; }
