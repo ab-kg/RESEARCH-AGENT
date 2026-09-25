@@ -62,3 +62,7 @@ The JWT signing secret and local database password are development defaults. Rep
 ### AI-generated briefing — light mode
 
 ![Fieldnotes research briefing in light mode](assets/Screenshot%202026-09-25%20151539.png)
+
+### Sign-in — dark mode
+
+![Fieldnotes sign-in page in dark mode](assets/Screenshot%202026-09-25%20151321.png)
