@@ -1,11 +1,13 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.graph import research_graph
+from app.llm import LLMConfigurationError, LLMProviderError
 from app.models import ResearchRun, User
 from app.security import create_access_token, get_current_user, hash_password, verify_password
 
@@ -85,8 +87,14 @@ def create_run(
 ) -> dict:
     try:
         result = research_graph.invoke({"question": request.question.strip()})
+    except LLMConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="Wikipedia search is temporarily unavailable. Please retry.") from exc
     except Exception as exc:
-        raise HTTPException(status_code=500, detail="The research workflow could not complete.") from exc
+        raise HTTPException(status_code=500, detail="The research workflow could not complete. Please retry.") from exc
 
     run = ResearchRun(
         user_id=user.id,

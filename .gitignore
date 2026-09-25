@@ -3,6 +3,7 @@ dist/
 .venv/
 __pycache__/
 *.py[cod]
+# Ignore local environment files and credentials, while keeping the example template.
 .env
 .env.*
 !.env.example

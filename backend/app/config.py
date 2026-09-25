@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://fieldnotes:fieldnotes-dev@localhost:5432/fieldnotes"
     jwt_secret: str = "local-only-change-this-secret-before-deploying"
     access_token_minutes: int = 60 * 24 * 7
+    groq_api_key: str | None = None
+    groq_model: str = "openai/gpt-oss-20b"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

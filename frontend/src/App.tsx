@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowUpRight, BookOpen, Check, ChevronDown, CircleHelp, Clock3, FileText, LoaderCircle, LogOut, Moon, Plus, Search, Sparkles, Sun } from 'lucide-react'
 
-type Run = { id: string; question: string; status: string; created_at: string; report?: { title: string; summary: string; sections: { heading: string; body: string }[]; sources: string[]; demo: boolean } }
+type Run = { id: string; question: string; status: string; created_at: string; report?: { title: string; summary: string; sections: { heading: string; body: string }[]; sources: (string | { title: string; url: string })[]; demo: boolean; model?: string } }
 
 const examples = ['What is changing in urban heat adaptation?', 'How are small teams using open source AI?', 'What makes a research finding trustworthy?']
+const LAST_RUN_KEY = 'fieldnotes-last-run'
 
 export default function App() {
   const [question, setQuestion] = useState('')
@@ -29,17 +30,26 @@ export default function App() {
     function onShortcut(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        setSelected(null); setQuestion(''); setError('')
+        startNewChat()
       }
     }
     window.addEventListener('keydown', onShortcut)
     return () => window.removeEventListener('keydown', onShortcut)
   }, [])
 
-  async function refresh(accessToken = token) {
+  async function refresh(accessToken = token, restoreSelection = false) {
     try {
       const response = await fetch('/api/runs', { headers: { Authorization: `Bearer ${accessToken}` } })
-      if (response.ok) setRuns(await response.json())
+      if (response.ok) {
+        const savedRuns = await response.json() as Run[]
+        setRuns(savedRuns)
+        if (restoreSelection) {
+          const previousRunId = localStorage.getItem(LAST_RUN_KEY)
+          const lastRun = savedRuns.find(run => run.id === previousRunId) ?? savedRuns[0]
+          setSelected(lastRun ?? null)
+          if (lastRun) localStorage.setItem(LAST_RUN_KEY, lastRun.id)
+        }
+      }
     } catch { /* API may not be running yet */ }
   }
   useEffect(() => {
@@ -50,7 +60,7 @@ export default function App() {
         if (!response.ok) throw new Error('session expired')
         const account = await response.json()
         setAccountEmail(account.email)
-        await refresh(token)
+        await refresh(token, true)
       })
       .catch(() => { localStorage.removeItem('fieldnotes-token'); setToken('') })
   }, [token])
@@ -72,7 +82,18 @@ export default function App() {
 
   function logout() {
     localStorage.removeItem('fieldnotes-token'); setToken(''); setRuns([]); setSelected(null); setAccountEmail('')
+    localStorage.removeItem(LAST_RUN_KEY)
     setAuthMode('login'); setAuthEmail(''); setAuthPassword(''); setAuthError('')
+  }
+
+  function startNewChat() {
+    localStorage.removeItem(LAST_RUN_KEY)
+    setSelected(null); setQuestion(''); setError('')
+  }
+
+  function openRun(run: Run) {
+    localStorage.setItem(LAST_RUN_KEY, run.id)
+    setSelected(run)
   }
 
   async function submit(value = question) {
@@ -82,6 +103,7 @@ export default function App() {
       const response = await fetch('/api/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ question: value }) })
       if (!response.ok) throw new Error((await response.json()).detail ?? 'Could not start the research run.')
       const run = await response.json() as Run
+      localStorage.setItem(LAST_RUN_KEY, run.id)
       setSelected(run); await refresh()
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not reach the API. Start the FastAPI backend and try again.') }
     finally { setBusy(false) }
@@ -94,10 +116,10 @@ export default function App() {
       <a className="brand" href="#"><span className="brand-mark"><BookOpen size={17}/></span><span>fieldnotes<span className="brand-dot">.</span></span></a>
       <div className="workspace"><span className="avatar">R</span><span><b>Research desk</b><small>Personal workspace</small></span><ChevronDown size={15}/></div>
       <div className="side-label">WORKSPACE</div>
-      <button className="nav-item active" onClick={() => { setSelected(null); setQuestion(''); setError('') }}><Plus size={16}/> New chat <span className="shortcut">⌘ K</span></button>
+      <button className="nav-item active" onClick={startNewChat}><Plus size={16}/> New chat <span className="shortcut">⌘ K</span></button>
       <button className="nav-item" onClick={() => { void refresh(); setSelected(null) }}><FileText size={16}/> All briefings</button>
       <div className="side-label recent-label">RECENT</div>
-      <div className="recent-list">{runs.length ? runs.slice(0, 7).map(run => <button className={`recent-item ${selected?.id === run.id ? 'selected' : ''}`} key={run.id} onClick={() => setSelected(run)}><span className="recent-dot"/>{run.question}</button>) : <p className="empty-recent">Your briefings will appear here.</p>}</div>
+      <div className="recent-list">{runs.length ? runs.slice(0, 7).map(run => <button className={`recent-item ${selected?.id === run.id ? 'selected' : ''}`} key={run.id} onClick={() => openRun(run)}><span className="recent-dot"/>{run.question}</button>) : <p className="empty-recent">Your briefings will appear here.</p>}</div>
       <div className="sidebar-bottom"><button className="nav-item"><CircleHelp size={16}/> Help & feedback</button><div className="profile"><span className="profile-avatar">{(accountEmail[0] ?? 'U').toUpperCase()}</span><span><b>{accountEmail || 'Your account'}</b><small>Signed in</small></span></div><button className="nav-item signout-button" onClick={logout}><LogOut size={16}/> Sign out</button></div>
     </aside>
 
@@ -114,7 +136,7 @@ export default function App() {
         <div className="privacy-note"><span className="privacy-dot"/> Thoughtful research takes a moment. Your briefings stay yours.</div>
       </section> : <section className="report-view">
         <button className="back-link" onClick={() => setSelected(null)}>← All briefings</button>
-        {report ? <><div className="eyebrow"><span className="eyebrow-icon"><FileText size={13}/></span> RESEARCH BRIEFING {report.demo && <span className="demo-tag">STARTER PREVIEW</span>}</div><h1 className="report-title">{report.title}</h1><div className="report-meta"><span><Clock3 size={14}/> Just now</span><span className="meta-separator">·</span><span>{report.demo ? 'Preview workflow' : 'Research complete'}</span></div>{report.demo && <div className="demo-callout">This is a workflow preview. Real source discovery and AI synthesis will be connected next.</div>}<article className="report-card"><h2>Executive summary</h2><p>{report.summary}</p>{report.sections.map((section, i) => <div className="report-section" key={i}><h2>{section.heading}</h2><p>{section.body}</p></div>)}<div className="sources-block"><h2>Sources</h2>{report.sources.length ? report.sources.map((source, i) => <a href={source} target="_blank" rel="noreferrer" key={source}>Source {i + 1} <ArrowUpRight size={13}/></a>) : <p className="no-sources">No web sources were gathered in this preview.</p>}</div></article><div className="saved-note"><Check size={14}/> Saved to your research desk</div></> : <div className="loading-report"><LoaderCircle className="spin"/> Loading briefing…</div>}
+        {report ? <><div className="eyebrow"><span className="eyebrow-icon"><FileText size={13}/></span> RESEARCH BRIEFING {report.demo && <span className="demo-tag">STARTER PREVIEW</span>}</div><h1 className="report-title">{report.title}</h1><div className="report-meta"><span><Clock3 size={14}/> Just now</span><span className="meta-separator">·</span><span>{report.demo ? 'Preview workflow' : `Research complete${report.model ? ` · ${report.model}` : ''}`}</span></div>{report.demo && <div className="demo-callout">This is a workflow preview. Real source discovery and AI synthesis will be connected next.</div>}<article className="report-card"><h2>Executive summary</h2><p>{report.summary}</p>{report.sections.map((section, i) => <div className="report-section" key={i}><h2>{section.heading}</h2><p>{section.body}</p></div>)}<div className="sources-block"><h2>Sources</h2>{report.sources.length ? report.sources.map((source, i) => { const url = typeof source === 'string' ? source : source.url; const label = typeof source === 'string' ? `Source ${i + 1}` : source.title; return <a href={url} target="_blank" rel="noreferrer" key={url}>[S{i + 1}] {label} <ArrowUpRight size={13}/></a> }) : <p className="no-sources">No web sources were gathered for this briefing.</p>}</div></article><div className="saved-note"><Check size={14}/> Saved to your research desk</div></> : <div className="loading-report"><LoaderCircle className="spin"/> Loading briefing…</div>}
       </section>}
       <footer className="footer"><span>Made for the questions worth asking.</span><span>Built with care <span className="heart">♥</span></span></footer>
     </main>
