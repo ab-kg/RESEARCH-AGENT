@@ -1,10 +1,14 @@
+from pathlib import Path
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import httpx
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.graph import research_graph
 from app.llm import LLMConfigurationError, LLMProviderError
@@ -14,7 +18,7 @@ from app.security import create_access_token, get_current_user, hash_password, v
 app = FastAPI(title="Fieldnotes Research API", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
@@ -118,3 +122,12 @@ def get_run(
     if run is None:
         raise HTTPException(status_code=404, detail="Research run not found")
     return serialize_run(run)
+
+
+# Serve the built React bundle from the same origin as the API. This is what makes the
+# single-service Railway deployment work: the frontend already calls relative "/api"
+# paths, so one origin means no CORS preflight and no extra reverse proxy.
+# Mounted last so every API route above takes precedence.
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / "static"
+if FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

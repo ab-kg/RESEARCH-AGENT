@@ -8,3 +8,9 @@ __pycache__/
 .env.*
 !.env.example
 .pytest_cache/
+
+# Compiled SPA, produced by the Docker build (COPY --from=frontend)
+backend/static/
+
+# TypeScript incremental build cache
+*.tsbuildinfo

@@ -1,0 +1,25 @@
+# Keep build context small and never bake secrets into the image.
+.git
+.gitignore
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/tsconfig.tsbuildinfo
+
+# Real environment files (the .env.example template is kept for reference)
+backend/.env
+.env
+.env.*
+!.env.example
+
+# Not part of the served application
+compose.yaml
+README.md
+assets/
+
+# Build outputs / local verification artifacts that must never leak into the image
+backend/static/
+backend/verify.db

@@ -1,0 +1,15 @@
+# Railway service configuration.
+# The image is built from the repository-root Dockerfile; Railway auto-detects this
+# file too, it simply pins the behaviour explicitly.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# FastAPI exposes this endpoint and never touches the database or the LLM,
+# so it reports healthy as soon as the process is accepting connections.
+healthcheckPath = "/health"
+healthcheckTimeout = 180
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
