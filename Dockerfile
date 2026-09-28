@@ -37,15 +37,21 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY --from=frontend /web/dist ./static
 
+RUN chmod +x ./entrypoint.sh
+
+# Port the app listens on. Must match the target port configured under the
+# service's Settings -> Networking -> Public Networking.
+ENV APP_PORT=8080
+
 # Drop privileges. The volume-free Railway filesystem does not require root.
 RUN useradd --create-home --shell /usr/sbin/nologin appuser \
     && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8000
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=25s --retries=3 \
     CMD curl -fsS http://127.0.0.1:8000/health || exit 1
 
-# Migrate before serving. Alembic is idempotent, so re-running on each deploy is safe.
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Entrypoint verifies DATABASE_URL, waits for Postgres, migrates, then serves.
+CMD ["./entrypoint.sh"]
